@@ -1,12 +1,12 @@
 /*
 *****************************************************************************************************************
-Project		 : Open TLF
+Project		 : _NA_
 SAS file name: big_n.sas
 File location: <path>
 *****************************************************************************************************************
 Purpose: Macro used to get population counts from a dataset. Typically ADSL.
 Author: Mazi Ntintelo
-Creation Date: 2023-06-30
+Creation Date: 2024-08-04
 *****************************************************************************************************************
 CHANGES:
 Date: Date of first modification of the code
