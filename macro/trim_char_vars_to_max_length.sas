@@ -17,7 +17,16 @@ Description: Shortly describe the changes made to the program
 
 
 %macro trim_char_vars_to_max_length(data_in=);
-
+	%if %sysevalf(%superq(data_in)=, boolean) %then %do;
+		%put ERROR: Parameter data_in is required;
+		%put ERROR: Macro &sysmacroname aborted;
+		%return;
+	%end;
+	%if ^%sysfunc(exist(%bquote(&data_in))) %then %do;
+		%put ERROR: Data &data_in does not exist;
+		%put ERROR: Macro &sysmacroname aborted;
+		%return;
+	%end;
 	%local size
 		   dsid
 		   i
@@ -27,7 +36,7 @@ Description: Shortly describe the changes made to the program
 	%let size=0;
 	%if ^&nvar %then %do;
 		%put ERROR: No variables found in data &data_in;
-		%put ERROR: No Trimming Done;
+		%put ERROR: Macro &sysmacroname aborted;
 		%let rc=%sysfunc(close(&dsid));
 		%return;
 	%end;
@@ -38,17 +47,16 @@ Description: Shortly describe the changes made to the program
 			%let charvar&size=%sysfunc(varname(&dsid, &i)); 
 		%end;
 	%end;
+	%let rc=%sysfunc(close(&dsid));
 	%if ^&size %then %do;
 		%put NOTE: No character variables in data &data_in;
 		%put NOTE: No Trimming Done;
-		%let rc=%sysfunc(close(&dsid));
 		%return;
 	%end;
-	%let rc=%sysfunc(close(&dsid));
 	%do i=1 %to &size;
 		%local maxlen&i;
 	%end;
-	proc sql;
+	proc sql noprint;
 		select coalesce(max(length(&charvar1)), 1)
 			%do i=2 %to &size;
 			  ,coalesce(max(length(&&charvar&i)), 1)
