@@ -26,4 +26,6 @@ Description: Shortly describe the changes made to the program
 		%return;
 	%end;
 
+
+	/*Hello world*/
 %mend re_join_supplemental_qualifiers;
