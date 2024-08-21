@@ -68,21 +68,36 @@ Description: Shortly describe the changes made to the program
 			%put ERROR: Macro &sysmacroname aborted;
 			%let rc=%sysfunc(close(&dsid));
 		%end;
-		%local var_type_&i;
-		%let var_type_&i = %sysfunc(%sysfunc(vartype(&dsid, varnum(&dsid, &&idvar&i))));
 	%end;
 	%let rc=%sysfunc(close(&dsid));
-	proc sort data=&supp_data_in out=supp_sorted;
+	%let random=V%sysfunc(rand(integer, 1, 5E6), hex8.);
+	proc sort data=&supp_data_in out=&random.supp_sorted;
 		by studyid usubjid idvar idvarval;
 	run;
-	proc transpose data=supp_sorted out=t_supp;
+	proc transpose data=&random.supp_sorted out=&random.t_supp;
 		by studyid usubjid idvar idvarval;
 		var qval;
 		id qnam;
 		idlabel qlabel;
 	run;
-	%do i=1 %to &total_idvars;
-		
-		
-	%end;
+	proc sql;
+		create table &data_out as
+			select l.*
+				  %do i=1 %to &total_idvars;
+				  	 %do j=1 %to &total_qnams;
+				  		,coalesce(t&i.&qnam1
+				  			  %do j=2 %to &total_qnams;
+				  				,t&i.&&qnam&j
+				  			  %end;) as &&qnam&j
+				  	%end;
+				  %end;
+			from &data_in as l 
+			 %do i=1 %to &total_idvars;
+			 	 left join &random.t_supp(where=(idvar="&&idvar&i")) as t&i
+			 	 on l.usubjid=t&i.usubjid and cats(l.&&idvar&i) = t&i.idvarval
+			 %end;
+			 ;
+	quit;
+	proc delete data=&random.supp_sorted &random.t_supp;
+	quit;
 %mend re_join_supplemental_qualifiers;
