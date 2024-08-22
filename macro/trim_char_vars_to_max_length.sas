@@ -15,7 +15,6 @@ Description: Shortly describe the changes made to the program
 *****************************************************************************************************************
 */
 
-
 %macro trim_char_vars_to_max_length(data_in=);
 	%if %sysevalf(%superq(data_in)=, boolean) %then %do;
 		%put ERROR: Parameter data_in is required;
@@ -26,6 +25,14 @@ Description: Shortly describe the changes made to the program
 		%put ERROR: Data &data_in does not exist;
 		%put ERROR: Macro &sysmacroname aborted;
 		%return;
+	%end;
+	%if %index(&data_in, .) %then %do;
+		%let libname=%scan(&data_in, 1, .);
+		%let memname=%scan(&data_in, 2, .);
+	%end;
+	%else %do;
+		%let libname=WORK;
+		%let memname=&data_in;
 	%end;
 	%local size
 		   dsid
@@ -67,8 +74,18 @@ Description: Shortly describe the changes made to the program
 		%end;
 		from &data_in;
 	quit;
+	
+	data _null_;
+		set sashelp.vcolumn(where=(libname="%upcase(&libname)" and memname = "%upcase(&memname)" and name 
+						    in(
+						   		%do i=1 %to &size;
+						   			"&&charvar&i"
+						   		%end;
+						       )));
+		call symputx(name, length, 'l');
+	run;
 	%do i=1 %to &size;
-		%put NOTE: Trimming &&charvar&i to length &&maxlen&i;
+		%put NOTE: Trimming &&charvar&i from length=%unquote(%nrstr(&)&&charvar&i) to length=&&maxlen&i;
 	%end;
 	proc sql;
 		alter table &data_in
