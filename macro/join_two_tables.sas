@@ -16,7 +16,7 @@ Description: Shortly describe the changes made to the program
 */
 
 
-
+/**/
 %macro join_two_tables(data_in=
 					  ,data_out=join_two_tables
 					  ,ref_data_in=
