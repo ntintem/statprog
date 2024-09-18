@@ -59,10 +59,10 @@ data _null_;
 	else call symputx(trt01a, _freq_, 'g');
 run;
 
-data adsl02;
+data prep;
 	set freq;
 	where _type_ in (1, 3);
-	length col1 denominator $100;
+	length col1 denominator $10;
 	if _type_=1 then do;
 		col1=strip(country);
 		denominator=strip(trt01a);
@@ -74,11 +74,11 @@ data adsl02;
 	perc=ifc( _freq_ ne 0, catx(' ', _freq_, cats('(', put(divide(_freq_, symgetn(denominator)) * 100, 8.1), ')')), "0 (0.0)");
 run;
 
-proc sort data=adsl02;
+proc sort data=prep;
 	by country siteid col1 trt01a;
 run;
 
-proc transpose data=adsl02 out=t_adsl;
+proc transpose data=prep out=final;
 	by country siteid col1;
 	var perc;
 	id trt01a;
