@@ -22,6 +22,7 @@ Description: Shortly describe the changes made to the program
 		   table
 		   random
 		   common_char_vars
+		   set_operator
 		   i;
 	%let tables = %sysfunc(countw(%bquote(&data_in), #));
 	%do i=1 %to &tables;
@@ -38,35 +39,35 @@ Description: Shortly describe the changes made to the program
 		%end;
 	%end;
 	%let common_char_vars=0;
+	%let set_operator=;
 	proc sql;
-		/*get variables that appear in at least 2 datasets*/
 		create table commonvars as 
 			select name
 			from (
-					select upcase(name) as name
-				    from dictionary.columns
-				    where libname="&libname_1" and memname="&memname_1"
-				    %do i=2 %to &tables;
-					 union all
-					 select upcase(name) as name
-					 from dictionary.columns
-					 where libname="&&libname_&i" and memname="&&memname_&i" 
-				   %end;
+					%do i=1 %to &tables;
+						&set_operator
+						select upcase(name) as name
+				    	from dictionary.columns
+				   		where libname="&&libname_&i" and memname="&&memname_&i" 
+				   		%let set_operator = union all;
+				    %end; 
 			   )
 			group by name
 			having count(name) > 1;
-			
+			%if ^&sqlObs %then %do;
+				%put NOTE: No common variables found between datasets;
+				quit;
+				%goto skip;
+			%end;
+			%let set_operator=;
 			create table commonvars2 as
-				select upcase(name) as name
-				 	  ,type 
-				from dictionary.columns
-				where libname="&libname_1" and memname="&memname_1" and calculated name in (select name from commonvars)
-				%do i=2 %to &tables;
-					union
+				%do i=1 %to &tables;
+					&set_operator
 					select upcase(name) as name
 					  	  ,type
 					from dictionary.columns
 					where libname="&&libname_&i" and memname="&&memname_&i" and calculated name in (select name from commonvars)
+					%let set_operator = union;
 				%end;;
 				create table dupchk as 
 					select name
@@ -74,26 +75,31 @@ Description: Shortly describe the changes made to the program
 			 		from commonvars2
 			 		group by name
 				having count(name) > 1;
-			
 				%if &sqlObs %then %do;
+					%put ERROR: Conflicting types for variables with the same name;
+					%put ERROR: Variables with the same name must have the same type across all datasets;
+					%put ERROR: Macro &sysmacroname aborted;
+					quit;
 					%return;
 				%end;
+				%let set_operator=;
 				create table lengths as
-					select upcase(name) as name
-					      ,length
-					      ,1 as id 
-			 	from dictionary.columns
-				where libname="&libname_1" and memname="&memname_1" and type = 'char' and calculated name in (select name from commonvars)
 				%do i=2 %to &tables;
-					union all 
+					&set_operator
 					select upcase(name) as name
 					      ,length
 					      ,&i as id
 					from dictionary.columns
 					where libname="&&libname_&i" and memname="&&memname_&i" and type = 'char' and calculated name in (select name from commonvars)
+					%let set_operator = union all;
 				%end;
 				order by name;
 	quit;
+	
+	%if ^&sqlObs %then %do;
+		%put NOTE: No common character variables were found; 
+		%goto skip;
+	%end;
 	
 	proc transpose data=lengths out=t_len prefix=length;
 		by name;
@@ -109,8 +115,8 @@ Description: Shortly describe the changes made to the program
 		if eof then call symputx('common_char_vars', nobs, 'l');
 	run;
 	
+	%skip:
 	%let random=V%sysfunc(rand(integer, 1, 5E6), hex8.);
-
 	data &data_out;
 		length &random $200
 		%do i=1 %to &common_char_vars;
@@ -125,6 +131,6 @@ Description: Shortly describe the changes made to the program
 	run;
 %mend stack_all;
 options mprint;
- %stack_all(data_in=x#x2
+ %stack_all(data_in=example1#example2
 		   ,data_out=test);
 
