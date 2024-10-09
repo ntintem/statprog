@@ -23,12 +23,23 @@ Description: Shortly describe the changes made to the program
 		   random
 		   common_char_vars
 		   set_operator
-		   i;
+		   i;	   
+	%if %sysevalf(%superq(data_in)=, boolean) or 
+		%sysevalf(%superq(data_out)=, boolean) %then %do;
+		%put ERROR: Parameters data_in and data_out are required;
+		%put ERROR: Macro &sysmacroname aborted;
+		%return;
+	%end;
 	%let tables = %sysfunc(countw(%bquote(&data_in), #));
 	%do i=1 %to &tables;
 		%local libname_&i
 			   memname_&i;
 		%let table = %qupcase(%scan(&data_in, &i, #));
+		%if ^%sysfunc(exist(&table)) %then %do;
+			%put ERROR: data &table does not exist;
+			%put ERROR: Macro &sysmacroname aborted;
+			%return;
+		%end;
 		%if %index(&table, .) %then %do;
 			%let libname_&i = %scan(&table, 1, .);
 			%let memname_&i = %scan(&table, 2, .);
@@ -130,7 +141,5 @@ Description: Shortly describe the changes made to the program
 		drop &random;
 	run;
 %mend stack_all;
-options mprint;
- %stack_all(data_in=example1#example2
-		   ,data_out=test);
+
 
