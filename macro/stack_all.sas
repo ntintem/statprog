@@ -28,7 +28,7 @@ Description: Shortly describe the changes made to the program
 	%do i=1 %to &tables;
 		%local libname_&i
 			   memname_&i;
-		%let table = %upcase(%scan(&data_in, &i, #));
+		%let table = %qupcase(%scan(&data_in, &i, #));
 		%if %index(&table, .) %then %do;
 			%let libname_&i = %scan(&table, 1, .);
 			%let memname_&i = %scan(&table, 2, .);
@@ -60,19 +60,19 @@ Description: Shortly describe the changes made to the program
 				%goto skip;
 			%end;
 			%let set_operator=;
-			create table commonvars2 as
-				%do i=1 %to &tables;
-					&set_operator
-					select upcase(name) as name
-					  	  ,type
-					from dictionary.columns
-					where libname="&&libname_&i" and memname="&&memname_&i" and calculated name in (select name from commonvars)
-					%let set_operator = union;
-				%end;;
-				create table dupchk as 
-					select name
-			 		from commonvars2
-			 		group by name
+			create table dupchk as
+				select name 
+				from (
+						%do i=1 %to &tables;
+							&set_operator
+							select upcase(name) as name
+					  	  		  ,type
+							from dictionary.columns
+							where libname="&&libname_&i" and memname="&&memname_&i" and calculated name in (select name from commonvars)
+							%let set_operator = union;
+						%end;
+					 )
+				group by name
 				having count(name) > 1;
 				%if &sqlObs %then %do;
 					%put ERROR: Conflicting types for variables with the same name;
@@ -131,6 +131,6 @@ Description: Shortly describe the changes made to the program
 	run;
 %mend stack_all;
 options mprint;
- %stack_all(data_in=sashelp.class#sashelp.class#sashelp.cars
+ %stack_all(data_in=example1#example2
 		   ,data_out=test);
 
