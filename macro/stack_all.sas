@@ -71,20 +71,20 @@ Description: Shortly describe the changes made to the program
 				%end;;
 				create table dupchk as 
 					select name
-			              ,count(name) as count
 			 		from commonvars2
 			 		group by name
 				having count(name) > 1;
 				%if &sqlObs %then %do;
 					%put ERROR: Conflicting types for variables with the same name;
 					%put ERROR: Variables with the same name must have the same type across all datasets;
+					%put ERROR: See work.dupchk data for more information;
 					%put ERROR: Macro &sysmacroname aborted;
 					quit;
 					%return;
 				%end;
 				%let set_operator=;
 				create table lengths as
-				%do i=2 %to &tables;
+				%do i=1 %to &tables;
 					&set_operator
 					select upcase(name) as name
 					      ,length
@@ -131,6 +131,6 @@ Description: Shortly describe the changes made to the program
 	run;
 %mend stack_all;
 options mprint;
- %stack_all(data_in=example1#example2
+ %stack_all(data_in=sashelp.class#sashelp.class#sashelp.cars
 		   ,data_out=test);
 
