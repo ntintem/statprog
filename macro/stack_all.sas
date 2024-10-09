@@ -31,6 +31,10 @@ Description: Shortly describe the changes made to the program
 		%return;
 	%end;
 	%let tables = %sysfunc(countw(%bquote(&data_in), #));
+	%if &tables = 1 %then %do;
+		%put WARNING: Only one dataset passed to data_in parameter;
+		%put WARNING: Ensure Multiple datasets are separated by a # hashtag;
+	%end;
 	%do i=1 %to &tables;
 		%local libname_&i
 			   memname_&i;
