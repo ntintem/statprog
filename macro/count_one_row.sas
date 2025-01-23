@@ -16,7 +16,7 @@ Description: Shortly describe the changes made to the program
 */
 
 %macro count_one_row(data_in=
-					,data_Out=one_row
+					,data_out=one_row
 					,label=
 					,usubjid=usubjid
 				    ,subgroup_vars_in=
@@ -48,7 +48,7 @@ Description: Shortly describe the changes made to the program
 	%if %required_parameter_is_null(parameter=section) %then %return;	
 	%if %required_parameter_is_null(parameter=order1) %then %return;			
 	%if %required_parameter_is_null(parameter=data_in) %then %return;
-	%if %required_parameter_is_null(parameter=data_Out) %then %return;
+	%if %required_parameter_is_null(parameter=data_out) %then %return;
 	%if %required_parameter_is_null(parameter=usubjid) %then %return;
 	%if %required_parameter_is_null(parameter=treatment_var_in) %then %return; 
 	%if %required_parameter_is_null(parameter=treatment_preloadfmt) %then %return; 
@@ -56,11 +56,11 @@ Description: Shortly describe the changes made to the program
 	%if %required_parameter_is_null(parameter=indent) %then %return; 
 	%if ^%library_exists(libref=gml) %then %return;
 	%if ^%dataset_exists(data_in=&data_in) %then %return;
-	%if ^%dataset_name_is_valid(data_in=&data_Out) %then %return;	
+	%if ^%dataset_name_is_valid(data_in=&data_out) %then %return;	
 	%if ^%variable_exists(data_in=&data_in,varIn=&usubjid) %then %return;							
 	%if ^%variable_exists(data_in=&data_in,varIn=&treatment_var_in) %then %return;
 	%if ^%variable_is_numeric(data_in=&data_in,varIn=&treatment_var_in) %then %return;
-	%if ^%avVerifyIntegerValue(parameter=indent) %then %return;
+	%if ^%integer_value_received(parameter=indent) %then %return;
 
 	%if %sysevalf(%superq(event_count_var_out)=, boolean) and %sysevalf(%superq(subject_count_var_out)=, boolean) %then %do;
 		%put NOTE:1/[%sysfunc(datetime(), e8601dt.)] Both event_count_var_out and subject_count_var_out Parameters are null;
@@ -81,10 +81,10 @@ Description: Shortly describe the changes made to the program
 
 	%let label = %sysfunc(dequote(&label));  
 
-	%let subgroup_vars_size=%argument_list_size(argumentList=&subgroup_vars_in);
-	%let subgroup_formats_size=%argument_list_size(argumentList=&subgroup_preloadfmt);
-	%let total_groups_size=%argument_list_size(argumentList=&define_total_groups);
-	%let by_vars_size=%argument_list_size(argumentList=&by_vars_in);
+	%let subgroup_vars_size=%argument_list_size(argument_list=&subgroup_vars_in);
+	%let subgroup_formats_size=%argument_list_size(argument_list=&subgroup_preloadfmt);
+	%let total_groups_size=%argument_list_size(argument_list=&define_total_groups);
+	%let by_vars_size=%argument_list_size(argument_list=&by_vars_in);
 	
 	%do i=1 %to &subgroup_vars_size;
 		%local subgroup_var&i
@@ -95,7 +95,6 @@ Description: Shortly describe the changes made to the program
 			   total_group&i._condition
 			   total_group&i._value;            
 	%end;
-
 	%do i=1 %to &by_vars_size;
 		%local by_var&i;
 	%end;
@@ -161,7 +160,7 @@ Description: Shortly describe the changes made to the program
 		id id_var;
 	run;
 	
-	data &data_Out;
+	data &data_out;
 		set gml.countOnerow2;
 		_section_=&section;
 		_order1_=&order1;
