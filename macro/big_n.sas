@@ -58,13 +58,13 @@ Description: Shortly describe the changes made to the program
 	%if ^%library_exists(libref=gml) %then %return;
 	%if ^%dataset_exists(data_in=&data_in) %then %return;
 	%if ^%dataset_name_is_valid(data_in=&data_out) %then %return;
-	%if ^%variable_exists(data_in=&data_in,varIn=&usubjid) %then %return;						
-	%if ^%variable_exists(data_in=&data_in,varIn=&treatment_var_in) %then %return;
-	%if ^%variable_is_numeric_type(data_in=&data_in,var_in=&treatment_var_in) %then %return;
+	%if ^%variable_exists(data_in=&data_in,var_in=&usubjid) %then %return;						
+	%if ^%variable_exists(data_in=&data_in,var_in=&treatment_var_in) %then %return;
+	%if ^%variable_is_numeric(data_in=&data_in,var_in=&treatment_var_in) %then %return;
 	%if ^%yes_no_value_received(parameter=include_big_n) %then %return;
 	%if ^%yes_no_value_received(parameter=big_n_parenthesis) %then %return;
 
-	%if &include_big_n=Y and (&big_n_parenthesis=Y or %sysevalf(%superq(text_below_big_n)^=, boolean)) %then %do;
+	%if &include_big_n=N and (&big_n_parenthesis=Y or %sysevalf(%superq(text_below_big_n)^=, boolean)) %then %do;
 		%put WARNING:1/[%sysfunc(datetime(), e8601dt.)] Since include_big_n is N/NO;
 		%put WARNING:2/[%sysfunc(datetime(), e8601dt.)] Values Assigned to big_n_parenthesis and text_below_big_n are ignored;
 	%end;
@@ -120,12 +120,13 @@ Description: Shortly describe the changes made to the program
 	/****************************************/
 	/**************Prep Data*****************/
 	/****************************************/
+
 	%let random=V%sysfunc(rand(integer, 1, 5E6), hex8.);
 
 	data gml.prep;
 		length &random %char_subgroups $200;
 		set &data_in;
-		%subset
+		%subset;
 		call missing(&random);
 		output;
 		%total_groups
@@ -136,6 +137,7 @@ Description: Shortly describe the changes made to the program
 	/***************Get Big N****************/
 	/****************************************/
 	
+
 	proc summary data=gml.prep completetypes nway;
 		class &treatment_var_in/preloadfmt exclusive;
 		%class_subgroups
@@ -171,4 +173,5 @@ Description: Shortly describe the changes made to the program
 		rename _freq_ = &var_out;
 		keep _freq_ &treatment_var_in %subgroups label gmacrovar;
 	run;
+	
 %mend big_n;
