@@ -205,7 +205,9 @@ Description: Shortly describe the changes made to the program
 			&random.max 
 		%end;;
 	run;
-
+	
+	%if ^%syserr_is_acceptable %then %return;
+	
 	proc sort data=gml.prep;
 		by %subgroups %by_vars
 			%do i=1 %to &nested_vars_size;

@@ -130,6 +130,8 @@ Description: Shortly describe the changes made to the program
 		call missing(&random);
 		keep &usubjid %subgroups %by_vars &cat_var_in &treatment_var_in;
 	run;
+	
+	%if ^%syserr_is_acceptable %then %return;
 
 	%if &by_vars_size %then %do;
 		proc sort data=gml.prep;
