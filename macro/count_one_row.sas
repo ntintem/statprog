@@ -116,25 +116,25 @@ Description: Shortly describe the changes made to the program
 	run;
 
 	data gml.prep;
-		length id_var col1 %avCharSubgroups $200;
+		length id_var col1 %char_subgroups $200;
 		set &data_in;
 		%subset
-		by &usubjid %avSubgroups %by_vars;
+		by &usubjid %subgroups %by_vars;
 		col1="&label";
 		%if %sysevalf(%superq(event_count_var_out)^=, boolean) %then %do;
 			id_var = "&event_count_var_out";
 			output;
-			%avTotalGroups
+			%total_groups
 		%end;
 		%if %sysevalf(%superq(subject_count_var_out)^=, boolean) %then %do;
-			if first.%if &by_vars_size %then &&byVar&by_vars_size;
+			if first.%if &by_vars_size %then &&by_var&by_vars_size;
 					 %else &usubjid; then do;
 				id_var = "&subject_count_var_out";
 				output;
-				%avTotalGroups
+				%total_groups
 			end;
 		%end;
-		keep &treatment_var_in id_var col1 %avSubgroups %by_vars;
+		keep &treatment_var_in id_var col1 %subgroups %by_vars;
 	run;
 	
 	%if ^%syserr_is_acceptable %then %return;
@@ -147,12 +147,12 @@ Description: Shortly describe the changes made to the program
 		by col1 id_var %by_vars;
 		class &treatment_var_in / exclusive preloadfmt;
 		%class_subgroups
-		format &treatment_var_in &treatment_preloadfmt %avFormatSubgroups;
+		format &treatment_var_in &treatment_preloadfmt %format_subgroups;
 		output out=gml.countOnerow1;
 	run;
 
 	proc sort data=gml.countOnerow1;
-		by col1 %avSubgroups &treatment_var_in %by_vars id_var;
+		by col1 %subgroups &treatment_var_in %by_vars id_var;
 	run;
 	
 	proc transpose data=gml.countOnerow1 out=gml.countOnerow2;
