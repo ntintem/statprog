@@ -55,12 +55,12 @@ Description: Shortly describe the changes made to the program
 	%if %required_parameter_is_null(parameter=usubjid) %then %return;
 	%if %required_parameter_is_null(parameter=treatment_var_in) %then %return; 
 	%if %required_parameter_is_null(parameter=treatment_preloadfmt) %then %return;
-	%if %required_parameter_is_null(parameter=dataOut) %then %return; 
+	%if %required_parameter_is_null(parameter=data_out) %then %return; 
 	%if %required_parameter_is_null(parameter=nested_vars_in) %then %return;
 	%if %required_parameter_is_null(parameter=nested_vars_indent) %then %return;
 	%if ^%library_exists(libref=gml) %then %return;
 	%if ^%dataset_exists(data_in=&data_in) %then %return;
-	%if ^%dataset_name_is_valid(data_in=&dataOut) %then %return;	
+	%if ^%dataset_name_is_valid(data_in=&data_out) %then %return;	
 	%if ^%variable_exists(data_in=&data_in,var_in=&usubjid) %then %return;							
 	%if ^%variable_exists(data_in=&data_in,var_in=&treatment_var_in) %then %return;
 	%if ^%variable_is_numeric(data_in=&data_in,var_in=&treatment_var_in) %then %return;
@@ -302,7 +302,7 @@ Description: Shortly describe the changes made to the program
 		id &random.id_var;
 	run;
 	
-	data &dataOut;
+	data &data_out;
 		set gml.nested_count2;
 		_section_=&section;
 		if _indent_ then col1 = repeat(' ', _indent_ - 1)!!col1;
