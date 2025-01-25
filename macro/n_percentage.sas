@@ -52,8 +52,8 @@ Description: Shortly describe the changes made to the program
 	%let n_only_display					 =0;	
 	%let n_percent_display				 =1;	
 	%let n_percent_denom_display		 =2;	
-	%let n_percent_event_display			 =3;
-	%let n_percent_denom_event_display =4;	
+	%let n_percent_event_display		 =3;
+	%let n_percent_denom_event_display   =4;	
  
 	%let macro_name = &sysmacroname;
 
