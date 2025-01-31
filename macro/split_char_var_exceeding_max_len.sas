@@ -15,206 +15,137 @@ Description: Shortly describe the changes made to the program
 *****************************************************************************************************************
 */
 
-
 %macro split_char_var_exceeding_max_len(data_in=
-				   ,data_out=
-				   ,max_len=200
-				   ,split_var=
-				   ,prefix=);
-
-	%local dsid 
-		   rc 
-		   splitVarExists
-		   libref
+				   					   ,data_out=
+				   					   ,max_length=200
+				   					   ,var_in=
+									   ,split_var_in_by=
+				   					   ,var_out_prefix=);
+	%local macro_name
 		   i
-		   hasData
-		   dropTables;
-	%*Ensure all parameters are given;
- 	%if %sysevalf(%superq(dataIn)  =, boolean)  or 
- 	 	%sysevalf(%superq(dataOut) =, boolean)  or
-	 	%sysevalf(%superq(maxLen)  =, boolean)  or  
-	 	%sysevalf(%superq(splitVar)=, boolean)  or 
-	 	%sysevalf(%superq(prefix)  =, boolean)  %then %do;
-	 		%put %sysfunc(repeat(-, 99));
-	 		%put ERROR: All keyword parameters must be given!;
-	 		%put NOTE: &dataIn=;
-	 		%put NOTE: &dataOut=;
-	 		%put NOTE: &maxLen=;
-	 		%put NOTE: &splitVar=;
-	 		%put NOTE: &prefix=;
-	 		%put %sysfunc(repeat(-, 99));
-			%return;
-	%end;
-	%*Ensure dataIn actually exists;
-	%if ^%sysfunc(exist(%bquote(&dataIn))) %then %do;
-			%put %sysfunc(repeat(-, 99));
-	 		%put ERROR: Dataset &dataIn does not exist;
-	 		%put %sysfunc(repeat(-, 99));
-			%return;
-	%end;
-	%*Ensure prefix is a valid prefix for a variable name;
-	%if ^%sysfunc(prxmatch(%str(m/^[A-Za-z_][A-Za-z_]+$/oi), %bquote(&prefix))) %then %do;
-			%put %sysfunc(repeat(-, 99));
-	 		%put ERROR: prefix is not a valid prefix for a SAS variable name;
-	 		%put %sysfunc(repeat(-, 99));
-			%return;
-	%end;
-	%*Ensure maxLen is actually a valid integer;
-	%if ^%sysfunc(prxmatch(%str(m/^\d+$/oi), %bquote(&maxLen))) %then %do;
-			%put %sysfunc(repeat(-, 99));
-	 		%put ERROR: maxLen is not a valid integer;
-	 		%put %sysfunc(repeat(-, 99));
-			%return;
-	%end;
-	%*Ensure dataOut is a valid SAS Name 2 level SAS name;
-	%if %sysfunc(prxmatch(%str(m/^[A-Za-z_][A-Za-z_0-9]{1,7}[.][A-Za-z_][A-Za-z_0-9]{1,31}$/oi), %bquote(&dataOut))) %then %do;
-		%let libref=%scan(&dataOut, 1, .);
-		%*if 2 level name, ensure libref is assinged;
-		%if %sysfunc(libref(&libref)) %then %do;
-			%put %sysfunc(repeat(-, 99));
-	 		%put ERROR: dataOut is a valid SAS 2 level name, however libref &libref is not assigned!;
-	 		%put %sysfunc(repeat(-, 99));
-			%return;
-		%end;
-	%end;
-	%*Ensure dataOut is a valid SAS Name 1 level SAS name;
-	%else %if ^%sysfunc(prxmatch(%str(m/^[A-Za-z_][A-Za-z_0-9]{1,31}$/oi), %bquote(&dataOut))) %then %do;
-		%put %sysfunc(repeat(-, 99));
-	 	%put ERROR: dataOut is not a valid SAS dataset name!;
-	 	%put %sysfunc(repeat(-, 99));
+		   vars_out 
+		   random;
+	%let macro_name = &sysmacroname; 
+	%if %required_parameter_is_null(parameter=data_in) %then %return;							
+	%if %required_parameter_is_null(parameter=data_out) %then %return;
+	%if %required_parameter_is_null(parameter=max_length) %then %return; 
+	%if %required_parameter_is_null(parameter=var_in) %then %return;
+	%if %required_parameter_is_null(parameter=var_out_prefix) %then %return;
+	%if ^%dataset_exists(data_in=&data_in) %then %return;
+	%if ^%library_exists(libref=gml) %then %return;
+	%if %length(%bquote(&split_var_in_by)) > 1 %then %do;
+		%put ERROR:1/[%sysfunc(datetime(), e8601dt.)] Split character %bquote(&split_var_in_by) is too long;
+		%put ERROR:2/[%sysfunc(datetime(), e8601dt.)] Specify only one character;
+		%put ERROR:2/[%sysfunc(datetime(), e8601dt.)] Macro &sysmacroname aborted;
 		%return;
 	%end;
-	%*Ensure splitVar is actually exists in dataIn;
-	%let dsid=%sysfunc(open(&dataIn));
-	%let splitVarExists=%sysfunc(varnum(&dsid, %bquote(&splitVar)));
-	%if ^&splitVarExists %then %do;
-		%let rc=%sysfunc(close(&dsid));
-		%put %sysfunc(repeat(-, 99));
-	 	%put ERROR: &splitVar variable was not found in dataset &dataIn!;
-	 	%put %sysfunc(repeat(-, 99));
+	%if ^%sysfunc(prxmatch(%str(m/^[A-Za-z_][A-Za-z_]+$/oi), %bquote(&var_out_prefix))) %then %do;
+	 	%put ERROR:1/[%sysfunc(datetime(), e8601dt.)] var_out_prefix is not a valid prefix for a variable name;
+		%put ERROR:2/[%sysfunc(datetime(), e8601dt.)] var_out_prefix must begin with an underscore or a letter and may not contain numbers;
+		%put ERROR:2/[%sysfunc(datetime(), e8601dt.)] Macro &sysmacroname aborted;
 		%return;
 	%end;
-	%*Ensure splitVar is actually exists in dataIn;
-	%if %sysfunc(vartype(&dsid, &splitVarExists)) ne C %then %do;
-		%let rc=%sysfunc(close(&dsid));
-		%put %sysfunc(repeat(-, 99));
-	 	%put ERROR: &splitVar variable was found in dataset &dataIn, however, was not defined as Character;
-	 	%put %sysfunc(repeat(-, 99));
-		%return;
-	%end;
-	%let rc=%sysfunc(close(&dsid));
+	%if ^%integer_value_received(parameter=max_length) %then %return;	
+	%if ^%dataset_name_is_valid(data_in=&data_out) %then %return;
+	%if ^%variable_exists(data_in=&data_in,var_in=&var_in) %then %return;
+	%if ^%variable_is_character(data_in=&data_in,var_in=&var_in) %then %return;
+	
+	%if %sysevalf(%superq(split_var_in_by)=, boolean) %then %let split_var_in_by=%str( );
+	%let random=V%sysfunc(rand(integer, 1, 5E6), hex8.);
 
-	%put %sysfunc(repeat(-, 99));
-	%put NOTE: Begin Splitting Data;
-	%put %sysfunc(repeat(-, 99));
-	%let hasData=0;
-
-	data split(drop=_:) 
-		 temp(keep=row __counter__ __text__);
-		retain __flag__ __maxCol__ 0;
-		set &dataIn end=eof;
-		length __text__ $&maxLen.. __tmp__ __string__ __stringTmp__ $32767. __lastWordFromString__ __lastWordFromStringTmp__ __word__$200.;
-		__tmp__	   =strip(&splitVar);
-		__counter__=0;
-		row = _n_;
-        do __ii__= 1 to countw(__tmp__, ' ');
-			__word__ = scan(__tmp__, __ii__, ' ');
-			if length(__word__)> &maxLen then do;
-				put 'WARNING:' _n_ = 'word=' __word__+(-1) " is greater than &maxLen characters";
+	data gml.split(drop=&random:) gml.temp(keep=row_&random &random._counter &random._text);
+		retain &random._flag &random._max_col 0;
+		set &data_in(rename=(&var_in = &random)) end=eof;
+		length &random._text $&max_length.;
+		&random._tmp=strip(compbl(&random));
+		&random._counter=0;
+		row_&random. = _n_;
+		&random._datetime=datetime();
+		do while(length(&random._tmp) > &max_length);
+			&random._counter+1;
+			&random._pos = find(&random._tmp, "&split_var_in_by", 'i', -&max_length);
+			if ^&random._pos then do;
+				put "ERROR:1/[" &random._datetime e8601dt. "] record " _n_ "split character &split_var_in_by not found in '" &random._tmp +(-1) "' within &max_length character limit";
+				put "ERROR:2/[" &random._datetime e8601dt. "] record " _n_ "review input variable and adjust lengths as needed";
+				put "ERROR:3/[" &random._datetime e8601dt. "] record " _n_ "split unsuccsessful";
 				goto end;
 			end;
-		end;
-		if length(__tmp__) > &maxLen then do while(^missing(__tmp__));
-			__counter__+1;
-			__string__=substr(__tmp__, 1, &maxLen);
-			__lastWordFromString__=scan(__string__, -1, ' ');
-			__firstWhiteSpaceAfterMaxLen__= find(__tmp__, ' ', '', &maxLen);
-			__stringTmp__ = substr(__tmp__, 1, __firstWhiteSpaceAfterMaxLen__-1);
-			__lastWordFromStringTmp__ = scan(__stringTmp__, -1, ' ');
-			if __lastWordFromStringTmp__ ne __lastWordFromString__ then do;
-				__whiteSpace__= find(__tmp__, ' ', '', -&maxLen);
-				__text__= substr(__tmp__, 1, __whiteSpace__ - 1);
-				__tmp__ = substr(__tmp__, __whiteSpace__ + 1);
-			end;
 			else do;
-				__text__ = __string__;
-				__tmp__	 = substr(__tmp__, &maxLen + 1);
+				&random._text = substr(&random._tmp, 1, &random._pos - 1);
+				&random._tmp  = strip(substr(&random._tmp, &random._pos + 1));
 			end;
-			output temp;
-			__flag__ = 1;
+			output gml.temp;
+			&random._flag = 1;
 		end;
-		else do;
-			__counter__=1;
-			__text__   = __tmp__;
-			output temp;
+		if ^missing(&random._tmp) then do;
+			&random._counter+1;
+			&random._text=&random._tmp;
+			output gml.temp;
 		end;
-		__maxCol__ = max(__maxCol__, __counter__);
+		&random._max_col = max(&random._max_col, &random._counter);
 		end:
 		if eof then do;
-			call symputx('numberOfColumns', __maxCol__, 'l');
-			call symputx('anyDataSplit', __flag__, 'l');
+			call symputx('number_of_columns', &random._max_col, 'l');
+			call symputx('any_data_split', &random._flag, 'l');
 		end;
-		output split;
+		output gml.split;
 	run;
-	%if &sysnobs %then %do;
-		%let dropTables=split temp t_text;
-		proc transpose data=temp out=t_text prefix=&prefix;
-			by row;
-			id __counter__;
-			var __text__;
+
+	%if %number_of_observations(data_in=gml.temp) %then %do;
+
+		proc transpose data=gml.temp out=gml.t_text prefix=&var_out_prefix;
+			by row_&random;
+			id &random._counter;
+			var &random._text;
 		run;
-		proc sql;
-			create table &dataOut(drop=row) as 
-				select a.*
-					%do i=1 %to &numberOfColumns;
-						,b.&prefix&i as &prefix.%sysfunc(ifc(&i=1, %str( ), %eval(&i - 1)))
-					%end;
-				from split 	as a natural left join 
-					 t_text as b;
+
+		proc datasets lib=gml mt=data nodetails nolist;
+			modify t_text;
+			rename
+				&var_out_prefix.1 = &var_out_prefix
+				%do i=2 %to &number_of_columns;
+					&var_out_prefix&i = &var_out_prefix.%eval(&i - 1)
+				%end;
+				;
 		quit;
-		%if ^&anyDataSplit %then %do;
-			%put %sysfunc(repeat(-, 99));
-			%put NOTE: No Splitting done, since no text is greater than &maxLen characters;
-			%put %sysfunc(repeat(-, 99));
+
+		proc sql noprint;
+			select name into: vars_out separated by '#'
+			from dictionary.columns
+			where libname='GML' and memname='T_TEXT' and name eqt "%upcase(&var_out_prefix)";
+		quit;
+
+		%join_two_tables(data_in=gml.split
+						,data_out=&data_out
+						,ref_data_in=gml.t_text
+						,join_type=left
+						,data_join_variables=row_&random
+						,ref_data_join_variables=row_&random
+						,vars_out=&vars_out)
+
+		%if ^%sysfunc(exist(&data_out)) %then %do;
+			%put ERROR:1/[%sysfunc(datetime(), e8601dt.)] Data &data_out not created;
+			%put ERROR:2/[%sysfunc(datetime(), e8601dt.)] See Log For details;
+			%put ERROR:3/[%sysfunc(datetime(), e8601dt.)] Macro &sysmacroname aborted;
+			%return;
 		%end;
-		%put %sysfunc(repeat(-, 99));
-		%put NOTE: DataSet &dataOut Succsessfully created;
-		%put %sysfunc(repeat(-, 99));
-	%end;
-	%else %do;
-		%let dropTables=temp;
-		proc datasets lib=work mt=data;
-			%if %sysfunc(exist(&dataOut)) %then %do;
-				delete &dataOut;
-			%end;
-			change split = &dataOut;
-		quit;
+
+		%if ^&any_data_split %then %do;
+			%put NOTE:1/[%sysfunc(datetime(), e8601dt.)] No text is greater than &max_length characters.;
+			%put NOTE:2/[%sysfunc(datetime(), e8601dt.)] No Splitting Done.;
+		%end;
+
 		proc sql;
-			alter table	&dataOut
-			add &prefix char(&maxLen)
-			drop column row;
+			alter table	&data_out
+			drop column row_&random;
 		quit;	
 	%end;
-	proc delete data=&dropTables;
-	run;
-	%put %sysfunc(repeat(-, 99));
-	%put NOTE: End of Macro &sysmacroname;
-	%put %sysfunc(repeat(-, 99));
-%mend splitCharVar;
-
-options mprint;
-
-data ees5;
-	length text $32767.;
-	text='Assessment of the change in tumour burden is an important feature of the clinical evaluation of cancer therapeutics. Both tumour shrinkage (objective response) and time to the development of disease progression are important endpoints in cancer clinical trials. The use of tumour regression as the endpoint for phase II trials screening new agents for evidence of anti-tumour effect is supported by years of evidence suggesting that, for many solid tumours, agents which produce tumour shrinkage in a proportion of patients have a reasonable (albeit imperfect) chance of subsequently demonstrating an improvement in overall survival or other time to event measures in randomised phase III studies (reviewed in [1–4]). At the current time objective response carries with it a body of evidence greater than for any other biomarker supporting its utility as a measure of promising treatment effect in phase II screening trials. Furthermore, at both the phase II and phase III stage of drug development, clinical trials in advanced disease settings are increasingly utilising time to progression (or progression-free survival) as an endpoint upon which efficacy conclusions are drawn, which is also based on anatomical measurement of tumour size'; output;
-	text='This is a very long piece of text. More Text to Follow. More Text to Follow. More Text to Follow'; output;
-	text='This is a very long piece of text. More Text to Follow.'; output;
-	text='This'; output;
-	text='This'; output;
-run;
-
-%split_char_var_exceeding_max_len(dataIn=ees5
-			 ,dataOut=tttttt
-			 ,maxLen=30
-			 ,splitVar=text
-			 ,prefix=DVTERM)
+	%else %do;
+		data &data_out;
+			set gml.split;
+			length &var_out_prefix $&max_length;
+			call missing(of &var_out_prefix);
+			drop row_&random;
+		run;
+	%end;
+%mend split_char_var_exceeding_max_len;
