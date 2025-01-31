@@ -1,10 +1,10 @@
 /*
 *****************************************************************************************************************
-Project		 : Open TLF
+Project		 : _NA_
 SAS file name: argument_list_size.sas
 File location: <path>
 *****************************************************************************************************************
-Purpose: Macro used to get population counts from a dataset. Typically ADSL.
+Purpose: Returns the number of arguments passed separated by a # 
 Author: Mazi Ntintelo
 Creation Date: 2023-06-30
 *****************************************************************************************************************
