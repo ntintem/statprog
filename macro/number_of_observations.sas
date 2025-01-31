@@ -4,9 +4,9 @@ Project		 : _NA_
 SAS file name: number_of_observations.sas
 File location: <path>
 *****************************************************************************************************************
-Purpose: Project setup program.
+Purpose: Macro to determine number of observations in a given dataset
 Author: Mazi Ntintelo
-Creation Date: 2023-08-04
+Creation Date: 2025-01-31
 *****************************************************************************************************************
 CHANGES:
 Date: Date of first modification of the code
@@ -15,19 +15,15 @@ Description: Shortly describe the changes made to the program
 *****************************************************************************************************************
 */
 
-%macro number_of_observations(data_in);
-	%local dsid nobs rc;
-	%if %sysfunc(%superq(data_in)=, boolean) %then %do;
-		%put ERROR: Parameter data_in is required;
-		%put ERROR: Macro &sysmacroname aborted;
-		%return;
-	%end;
-	%if ^%sysfunc(exist(%bquote(&data_in))) %then %do;
-		%put ERROR: Data &data_in does not exist;
-		%put ERROR: Macro &sysmacroname aborted;
-		%return;
-	%end;
-	%let dsid=%sysfunc(open(&data_in));
+%macro number_of_observations(data_in=);
+	%local dsid
+		   rc 
+		   nobs 
+		   macro_name;
+	%let macro_name = &sysmacroname;
+	%if %required_parameter_is_null(parameter=data_in) %then %return;
+	%if ^%dataset_exists(data_in=&data_in) %then %return;
+	%let dsid=%sysfunc(open(&dataIn));
 	%let nobs=%sysfunc(attrn(&dsid, nlobsf));
 	%let rc=%sysfunc(close(&dsid));
 	&nobs
