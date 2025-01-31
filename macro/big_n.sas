@@ -87,7 +87,7 @@ Description: Shortly describe the changes made to the program
 			   total_group&i._value;            
 	%end;
 
-	%if ^%total_groups_definition_is_valid %then %return;
+	%if ^%total_groups_are_valid %then %return;
 	%if ^%subgroups_are_valid %then %return;
 
 	%let subgroup_char_vars_size=%char_subgroups_size;
@@ -132,6 +132,8 @@ Description: Shortly describe the changes made to the program
 		%total_groups
 		keep &treatment_var_in %subgroups;
 	run;
+	
+	%if ^%syserr_is_acceptable %then %return;
 
 	/****************************************/
 	/***************Get Big N****************/
