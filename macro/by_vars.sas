@@ -1,12 +1,12 @@
 /*
 *****************************************************************************************************************
-Project		 : _NA_
+Project		 : StatProg
 SAS file name: by_vars.sas
-File location: <path>
+File location: /statprog/macro/by_vars.sas
 *****************************************************************************************************************
 Purpose: Returns all by vars passed to by_vars_in parameter
 Author: Mazi Ntintelo
-Creation Date: 2023-06-30
+Creation Date: 2025-03-18
 *****************************************************************************************************************
 CHANGES:
 Date: Date of first modification of the code
