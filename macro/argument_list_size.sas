@@ -1,12 +1,12 @@
 /*
 *****************************************************************************************************************
-Project		 : _NA_
+Project		 : StatProg
 SAS file name: argument_list_size.sas
-File location: <path>
+File location: /statprog/macro/argument_list_size.sas
 *****************************************************************************************************************
 Purpose: Returns the number of arguments passed separated by a # 
 Author: Mazi Ntintelo
-Creation Date: 2023-06-30
+Creation Date: 2025-03-18
 *****************************************************************************************************************
 CHANGES:
 Date: Date of first modification of the code
