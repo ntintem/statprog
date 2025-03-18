@@ -1,10 +1,10 @@
 /*
 *****************************************************************************************************************
-Project		 : _NA_
+Project		 : StatProg
 SAS file name: catalog_entry_exists.sas
-File location: <path>
+File location: /statprog/macro/catalog_entry_exists.sas
 *****************************************************************************************************************
-Purpose: Macro used to get population counts from a dataset. Typically ADSL.
+Purpose: Macro used to determine whether a catalog entry exists or not
 Author: Mazi Ntintelo
 Creation Date: 2025-01-23
 *****************************************************************************************************************
@@ -14,7 +14,6 @@ Modifyer name: Name of the programmer who modified the code
 Description: Shortly describe the changes made to the program
 *****************************************************************************************************************
 */
-
 
 %macro catalog_entry_exists(entry=);
 	%if ^%sysfunc(cexist(&entry)) %then %do;
