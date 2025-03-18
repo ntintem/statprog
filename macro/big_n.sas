@@ -1,12 +1,12 @@
 /*
 *****************************************************************************************************************
-Project		 : _NA_
+Project		 : StatProg
 SAS file name: big_n.sas
-File location: <path>
+File location: /statprog/macro/big_n.sas
 *****************************************************************************************************************
-Purpose: Macro used to get population counts from a dataset. Typically ADSL.
+Purpose: Macro used to get population counts from a dataset.
 Author: Mazi Ntintelo
-Creation Date: 2025-01-23
+Creation Date: 2025-03-18
 *****************************************************************************************************************
 CHANGES:
 Date: Date of first modification of the code
@@ -139,7 +139,6 @@ Description: Shortly describe the changes made to the program
 	/***************Get Big N****************/
 	/****************************************/
 	
-
 	proc summary data=gml.prep completetypes nway;
 		class &treatment_var_in/preloadfmt exclusive;
 		%class_subgroups
