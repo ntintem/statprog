@@ -1,12 +1,12 @@
 /*
 *****************************************************************************************************************
-Project		 : _NA_
-SAS file name: counts_nested.sas
-File location: <path>
+Project		 : StatProg
+SAS file name: count_nested.sas
+File location: /statprog/macro/count_nested.sas
 *****************************************************************************************************************
 Purpose: Macro used to get nested counts. Typically used for safety analysis.
 Author: Mazi Ntintelo
-Creation Date: 2023-08-04
+Creation Date: 2025-03-18
 *****************************************************************************************************************
 CHANGES:
 Date: Date of first modification of the code
