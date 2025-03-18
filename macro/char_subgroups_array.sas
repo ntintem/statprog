@@ -4,7 +4,7 @@ Project		 : StatProg
 SAS file name: char_subgroups_array.sas
 File location: /statprog/macro/char_subgroups_array.sas
 *****************************************************************************************************************
-Purpose: Macro used to get population counts from a dataset. Typically ADSL.
+Purpose: Macro creates 
 Author: Mazi Ntintelo
 Creation Date: 2025-03-18
 *****************************************************************************************************************
