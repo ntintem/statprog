@@ -1,12 +1,12 @@
 /*
 *****************************************************************************************************************
-Project		 : _NA_
+Project		 : StatProg
 SAS file name: count_categorical.sas
-File location: <path>
+File location: /statprog/macro/count_categorical.sas
 *****************************************************************************************************************
-Purpose: Macro used to get population counts from a dataset. Typically ADSL.
+Purpose: Macro used to obtain categorical counts/frequencies
 Author: Mazi Ntintelo
-Creation Date: 2024-08-04
+Creation Date: 2025-03-18
 *****************************************************************************************************************
 CHANGES:
 Date: Date of first modification of the code
