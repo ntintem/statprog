@@ -35,14 +35,14 @@ proc groovy;
 		import org.apache.pdfbox.pdmodel.common.*;
 		import org.apache.pdfbox.pdmodel.interactive.documentnavigation.destination.*;
 
-		public class AvPdfTableOfContentsGenerator {
+		public class TableOfContentsGenerator {
 			//Constants
 			public static final int FIRST_PAGE=0;
 			public static final int PDF_FILE_INDEX=0;
 			public static final int FILE_NAME_INDEX=1;
 			public static final int VISITS_METADATA_FILE_INDEX=2;
 			public static final int FORMS_METADATA_FILE_INDEX=3;
-			public static final String COURIER_FONT = "T:\\Standard Programs\\Prod\\Utility\\TableOfContents\\Fonts\\cour.ttf";
+			public static final String COURIER_FONT = "~\\TableOfContents\\Fonts\\cour.ttf";
 
 			//Instance variables
 			private PDDocument annotedCaseReportForm;
@@ -57,7 +57,7 @@ proc groovy;
 				String outFile=args[FILE_NAME_INDEX];
 				String visitsMetadataFile=args[VISITS_METADATA_FILE_INDEX];
 				String formatsMetadataFile=args[FORMS_METADATA_FILE_INDEX];
-				AvPdfTableOfContentsGenerator tableOfContents = new AvPdfTableOfContentsGenerator(pdfFile);
+				TableOfContentsGenerator tableOfContents = new TableOfContentsGenerator(pdfFile);
 				HashMap<String, Integer> orderMap = tableOfContents.readMetadata(visitsMetadataFile, tableOfContents.visits);
 				tableOfContents.readMetadata(formatsMetadataFile, tableOfContents.forms);
 				tableOfContents.readPdf(orderMap);
@@ -70,7 +70,7 @@ proc groovy;
 				tableOfContents.closePdf(outFile);
 			}
 			
-			public AvPdfTableOfContentsGenerator(String filename){
+			public TableOfContentsGenerator(String filename){
 				annotedCaseReportForm = Loader.loadPDF(new File(filename));
 				pages = new ArrayList<PDPage>();
 				mainBookmarks = new ArrayList<PDOutlineItem>();
@@ -80,7 +80,7 @@ proc groovy;
 			}
 
 			// Default constructor not used, but kept for compilation purposes
-			public AvPdfTableOfContentsGenerator(){
+			public TableOfContentsGenerator(){
 
 			}
 
